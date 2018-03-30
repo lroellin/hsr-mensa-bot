@@ -16,7 +16,7 @@ BASE_URL = "https://api.telegram.org/bot{}".format(TOKEN)
 BUCKETNAME = "hsr-mensa"
 KEY = "mensa.json"
 PARSE_MODE = "Markdown"
-FILTER = "\n\nRegular CHF 8.00/10.60\nSmall CHF 6.00/8.00"
+PRICE = "\n\nRegular CHF 8.00/10.60\nSmall CHF 6.00/8.00"
 TEMPLATE_FILE = "template.jinja2"
 
 START_MESSAGE = (
@@ -28,6 +28,7 @@ START_MESSAGE = (
 HELP_MESSAGE = (
     "We support the following commands\n"
     "- /getmenu Gets the current menu\n"
+    "- /getwholemenu Gets the complete menu, including \"boilerplate\" dishes 😉\n"
     "- /lastupdate Tells you the time of the last update (for diagnosing)"
 )
 
@@ -35,6 +36,16 @@ COMMAND_START = "/start"
 COMMAND_HELP = "/help"
 COMMAND_GETMENU = "/getmenu"
 COMMAND_LASTUPDATE = "/lastupdate"
+
+KEY_CANTEENS = "canteens"
+KEY_NAME = "name"
+KEY_MENUS = "menus"
+KEY_TITLE = "title"
+KEY_DESCRIPTION = "description"
+KEY_LATEST_UPDATE = "latestUpdate"
+
+
+UNNEEDED_MENUS_INDEX = 2  # at what index to cut off the unneeded menus
 
 TIMEZONE = pytz.timezone("Europe/Berlin")
 
@@ -46,7 +57,7 @@ def get_object() -> dict:
 
 
 def get_timestamp(data: dict) -> str:
-    unix_timestamp = data["latestUpdate"] // 1000
+    unix_timestamp = data[KEY_LATEST_UPDATE] // 1000
     utc = datetime.datetime.utcfromtimestamp(unix_timestamp)
     time_zoned = utc.astimezone(TIMEZONE)
     return time_zoned.strftime('%Y-%m-%d %H:%M:%S')
@@ -64,14 +75,23 @@ def send_response(response: str, chat_id: str):
 
 def get_menu() -> str:
     data = get_object()
-    timestamp = get_timestamp(data)
+    for canteen in data[KEY_CANTEENS]:
+        canteen[KEY_MENUS] = canteen[KEY_MENUS][:UNNEEDED_MENUS_INDEX]
+        for menu in canteen[KEY_MENUS]:
+            menu[KEY_DESCRIPTION].replace(PRICE, "")
+    return get_rendered(data)
 
+
+def get_whole_menu() -> str:
+    data = get_object()
+    return get_rendered(data)
+
+
+def get_rendered(data: dict) -> str:
     template_loader = jinja2.FileSystemLoader(searchpath="./")
     template_env = jinja2.Environment(loader=template_loader, trim_blocks=True, lstrip_blocks=True)
     template = template_env.get_template(TEMPLATE_FILE)
-    response = template.render(data=data, timestamp=timestamp, description_filter=FILTER)
-
-    return response
+    return template.render(data=data)
 
 
 def last_update() -> str:
@@ -97,6 +117,10 @@ def get(event, context):
         if message.startswith("/getmenu"):
             send_typing(chat_id)
             response = get_menu()
+
+        if message.startswith("/getwholemenu"):
+            send_typing(chat_id)
+            response = get_whole_menu()
 
         if message.startswith("/lastupdate"):
             send_typing(chat_id)
