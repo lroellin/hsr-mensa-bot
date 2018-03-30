@@ -2,8 +2,7 @@
 *{{ canteen["name"] }}*
 {% for menu in canteen["menus"] %}
 _{{ menu["title"] }}_
-{{ menu["description"].replace(description_filter, "") }}
+{{ menu["description"] }}
 {% endfor %}
 
 {% endfor %}
-Letztes Update: {{ timestamp }}
