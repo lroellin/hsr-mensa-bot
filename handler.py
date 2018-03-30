@@ -101,9 +101,13 @@ def last_update() -> str:
 def get(event, context):
     try:
         data = json.loads(event["body"])
+        print(data)
         message = str(data["message"]["text"])
         chat_id = data["message"]["chat"]["id"]
-        first_name = data["message"]["chat"]["first_name"]
+        try:
+            first_name = data["message"]["chat"]["first_name"]
+        except KeyError:
+            first_name = "Group"
 
         response = "Please use /start, {}".format(first_name)
 
