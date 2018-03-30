@@ -9,6 +9,7 @@ sys.path.append(os.path.join(here, "./vendored"))
 import requests
 import boto3
 import jinja2
+import pytz
 
 TOKEN = os.environ['TELEGRAM_TOKEN']
 BASE_URL = "https://api.telegram.org/bot{}".format(TOKEN)
@@ -17,6 +18,25 @@ KEY = "mensa.json"
 PARSE_MODE = "Markdown"
 FILTER = "\n\nRegular CHF 8.00/10.60\nSmall CHF 6.00/8.00"
 TEMPLATE_FILE = "template.jinja2"
+
+START_MESSAGE = (
+    "Hi!\n"
+    "This bot tells you the current menu of the HSR mensa. "
+    "To get a list of available commands, use /help"
+)
+
+HELP_MESSAGE = (
+    "We support the following commands\n"
+    "- /getmenu Gets the current menu\n"
+    "- /lastupdate Tells you the time of the last update (for diagnosing)"
+)
+
+COMMAND_START = "/start"
+COMMAND_HELP = "/help"
+COMMAND_GETMENU = "/getmenu"
+COMMAND_LASTUPDATE = "/lastupdate"
+
+TIMEZONE = pytz.timezone("Europe/Berlin")
 
 
 def get_object() -> dict:
@@ -27,7 +47,9 @@ def get_object() -> dict:
 
 def get_timestamp(data: dict) -> str:
     unix_timestamp = data["latestUpdate"] // 1000
-    return datetime.datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M:%S UTC')
+    utc = datetime.datetime.utcfromtimestamp(unix_timestamp)
+    time_zoned = utc.astimezone(TIMEZONE)
+    return time_zoned.strftime('%Y-%m-%d %H:%M:%S')
 
 
 def send_typing(chat_id: str):
@@ -52,6 +74,11 @@ def get_menu() -> str:
     return response
 
 
+def last_update() -> str:
+    data = get_object()
+    return get_timestamp(data)
+
+
 def get(event, context):
     try:
         data = json.loads(event["body"])
@@ -59,14 +86,21 @@ def get(event, context):
         chat_id = data["message"]["chat"]["id"]
         first_name = data["message"]["chat"]["first_name"]
 
-        response = "Please /start or /getmenu, {}".format(first_name)
+        response = "Please use /start, {}".format(first_name)
 
-        if "start" in message:
-            response = "Hi!\nUse /getmenu to interact with me"
+        if message.startswith("/start"):
+            response = START_MESSAGE
 
-        if "getmenu" in message:
+        if message.startswith("/help"):
+            response = HELP_MESSAGE
+
+        if message.startswith("/getmenu"):
             send_typing(chat_id)
             response = get_menu()
+
+        if message.startswith("/lastupdate"):
+            send_typing(chat_id)
+            response = last_update()
 
         send_response(response, chat_id)
 
