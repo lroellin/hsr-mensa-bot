@@ -44,7 +44,6 @@ KEY_TITLE = "title"
 KEY_DESCRIPTION = "description"
 KEY_LATEST_UPDATE = "latestUpdate"
 
-
 UNNEEDED_MENUS_INDEX = 2  # at what index to cut off the unneeded menus
 
 TIMEZONE = pytz.timezone("Europe/Berlin")
