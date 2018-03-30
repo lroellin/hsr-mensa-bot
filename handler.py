@@ -49,17 +49,6 @@ def get_menu() -> str:
     template = template_env.get_template(TEMPLATE_FILE)
     response = template.render(data=data, timestamp=timestamp, description_filter=FILTER)
 
-    # response = ""
-    # for canteen in data["canteens"]:
-    #     name = canteen["name"]
-    #     response += f"*{name}*\n"
-    #     for menu in canteen["menus"]:
-    #         title = menu["title"]
-    #         description = menu["description"]
-    #         description = description.replace(FILTER, "")
-    #         response += f"_{title}_\n{description}\n"
-    #     response += "\n"
-    # response += f"Letztes Update: {timestamp}"
     return response
 
 
