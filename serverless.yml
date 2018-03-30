@@ -1,0 +1,15 @@
+service: hsr-mensa-bot
+
+provider:
+  name: aws
+  runtime: python3.6
+  role: arn:aws:iam::555419802183:role/getMensaJson
+
+functions:
+  hello:
+    handler: handler.get
+    events:
+      - http:
+          path: get
+          method: post
+          cors: true
