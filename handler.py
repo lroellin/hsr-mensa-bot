@@ -17,7 +17,6 @@ BASE_URL = "https://api.telegram.org/bot{}".format(TOKEN)
 BUCKETNAME = "hsr-mensa"
 KEY = "mensa.json"
 PARSE_MODE = "Markdown"
-PRICE = "\n\nRegular CHF 8.00/10.60\nSmall CHF 6.00/8.00"
 TEMPLATE_FILE = "template.jinja2"
 
 START_MESSAGE = (
