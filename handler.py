@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import datetime
+import re
 
 here = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(here, "./vendored"))
@@ -62,6 +63,11 @@ def get_timestamp(data: dict) -> str:
     return time_zoned.strftime('%Y-%m-%d %H:%M:%S')
 
 
+def replace_price(input: str) -> str:
+    regex = r"\s{2,}Regular.*\n.*"
+    return re.sub(regex, "", input)
+
+
 def send_typing(chat_id: str):
     requests.post(BASE_URL + "/sendChatAction", {"chat_id": chat_id, "action": "typing"})
 
@@ -77,7 +83,7 @@ def get_menu() -> str:
     for canteen in data[KEY_CANTEENS]:
         canteen[KEY_MENUS] = canteen[KEY_MENUS][:UNNEEDED_MENUS_INDEX]
         for menu in canteen[KEY_MENUS]:
-            menu[KEY_DESCRIPTION].replace(PRICE, "")
+            menu[KEY_DESCRIPTION] = replace_price(menu[KEY_DESCRIPTION])
     return get_rendered(data)
 
 
