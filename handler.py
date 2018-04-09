@@ -63,9 +63,9 @@ def get_timestamp(data: dict) -> str:
     return time_zoned.strftime('%Y-%m-%d %H:%M:%S')
 
 
-def replace_price(input: str) -> str:
+def replace_price(input_: str) -> str:
     regex = r"\s{2,}Regular.*\n.*"
-    return re.sub(regex, "", input)
+    return re.sub(regex, "", input_)
 
 
 def send_typing(chat_id: str):
