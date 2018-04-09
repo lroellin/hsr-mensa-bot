@@ -13,7 +13,7 @@ import jinja2
 import pytz
 
 TOKEN = os.environ['TELEGRAM_TOKEN']
-BASE_URL = "https://api.telegram.org/bot{}".format(TOKEN)
+BASE_URL = f"https://api.telegram.org/bot{TOKEN}"
 BUCKETNAME = "hsr-mensa"
 KEY = "mensa.json"
 PARSE_MODE = "Markdown"
